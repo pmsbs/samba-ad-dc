@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # install necessary packages
-sudo apt install samba-ad-dc krb5-user bind9-dnsutils
+sudo apt install -y samba-ad-dc krb5-user bind9-dnsutils
 
 # disable unnecessary services
 sudo systemctl disable --now smbd nmbd winbind
@@ -20,8 +20,9 @@ sudo samba-tool domain provision --use-rfc2307 --interactive
 # set samba as the DNS backend
 domain=$(sudo samba-tool domain info | grep 'Domain Name' | awk '{print $3}')
 sudo unlink /etc/resolv.conf
-nameserver 127.0.0.1
-search $domain
+sudo echo "nameserver 127.0.0.1" >> /etc/resolv.conf
+sudo echo "search $domain" >> /etc/resolv.conf
+
 
 # disable systemd-resolved to avoid conflicts
 sudo systemctl disable --now systemd-resolved
