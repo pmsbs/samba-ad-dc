@@ -18,11 +18,10 @@ mv /etc/samba/smb.conf /etc/samba/smb.conf.orig
 samba-tool domain provision --use-rfc2307 --interactive
 
 # set samba as the DNS backend
-domain=$(samba-tool domain info | grep 'Domain Name' | awk '{print $3}')
+domain=$(samba-tool domain info 127.0.0.1 | grep 'Domain' | awk '{print $3}')
 unlink /etc/resolv.conf
 echo "nameserver 127.0.0.1" >> /etc/resolv.conf
 echo "search $domain" >> /etc/resolv.conf
-
 
 # disable systemd-resolved to avoid conflicts
 systemctl disable --now systemd-resolved
