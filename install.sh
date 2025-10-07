@@ -1,5 +1,10 @@
 #!/bin/bash
 
+read -p "Enter your domain name: " domain
+domain_upper=$(echo "$domain" | tr '[:lower:]' '[:upper:]')
+realm="${domain_upper%%.*}"
+read -s -p "Enter the admin password: " adminpass
+
 # Update system
 apt update && apt -y upgrade
 
@@ -18,10 +23,15 @@ systemctl enable samba-ad-dc
 mv /etc/samba/smb.conf /etc/samba/smb.conf.orig
 
 # provision the samba AD DC
-samba-tool domain provision --use-rfc2307 --interactive
+sudo samba-tool domain provision \
+    --domain $domain_upper \
+    --realm=$realm \
+    --adminpass="$adminpass" \
+    --server-role=dc \
+    --use-rfc2307 \
+    --dns-backend=SAMBA_INTERNAL
 
 # set samba as the DNS backend
-domain=$(samba-tool domain info 127.0.0.1 | grep 'Domain' | awk '{print $3}')
 unlink /etc/resolv.conf
 echo "nameserver 127.0.0.1" >> /etc/resolv.conf
 echo "search $domain" >> /etc/resolv.conf
